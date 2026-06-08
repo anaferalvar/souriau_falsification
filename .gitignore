@@ -1,0 +1,13 @@
+# Données lourdes
+chains/
+*.fits
+*.fits.gz
+*.npy
+data/cmb/
+*.txt.gz
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
+.env
+venv/
