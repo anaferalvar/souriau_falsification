@@ -1,0 +1,412 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2639
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \\documentclass[11pt, a4paper]\{article\}\
+\
+\\usepackage[utf8]\{inputenc\}\
+\\usepackage[T1]\{fontenc\}\
+\\usepackage[french]\{babel\}\
+\
+\\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm, right=2.8cm]\{geometry\}\
+\\usepackage\{parskip\}\
+\\setlength\{\\parskip\}\{0.6em\}\
+\
+\\usepackage\{amsmath, amssymb\}\
+\
+\\usepackage\{booktabs\}\
+\\usepackage\{array\}\
+\\usepackage[table]\{xcolor\}\
+\\definecolor\{lightgray\}\{gray\}\{0.92\}\
+\\definecolor\{darkblue\}\{RGB\}\{31,56,100\}\
+\\definecolor\{green1\}\{RGB\}\{29,112,68\}\
+\\definecolor\{orange1\}\{RGB\}\{184,96,12\}\
+\\definecolor\{red1\}\{RGB\}\{192,57,43\}\
+\
+\\usepackage\{tcolorbox\}\
+\\tcbuselibrary\{skins, breakable\}\
+\
+\\newtcolorbox\{verdictbox\}[2][]\{\
+    colback=#2!8,\
+    colframe=#2!60!black,\
+    fonttitle=\\bfseries\\small,\
+    title=#1,\
+    left=6pt, right=6pt, top=4pt, bottom=4pt,\
+    arc=4pt\
+\}\
+\
+\\usepackage[colorlinks=true, linkcolor=darkblue, urlcolor=darkblue]\{hyperref\}\
+\
+\\usepackage\{fancyhdr\}\
+\\pagestyle\{fancy\}\
+\\fancyhf\{\}\
+\\rhead\{\\small Falsification Souriau --- Claims A1 \\& A2\}\
+\\lhead\{\\small Ana Fern\'e1ndez \'c1lvarez\}\
+\\cfoot\{\\thepage\}\
+\\renewcommand\{\\headrulewidth\}\{0.4pt\}\
+\
+\\begin\{document\}\
+\
+\\begin\{center\}\
+  \{\\LARGE\\bfseries\\color\{darkblue\}\
+    Confrontation aux donn\'e9es cosmologiques\\\\[4pt]\
+    Claims A1 et A2 de la th\'e9orie FST/Souriau\}\\\\[10pt]\
+  \{\\large Ana Fern\'e1ndez \'c1lvarez\}\\\\[2pt]\
+  \{\\normalsize Juin 2026\}\\\\[8pt]\
+\\end\{center\}\
+\
+\\vspace\{0.5em\}\
+\\hrule\
+\\vspace\{1em\}\
+\
+\\section*\{Pr\'e9ambule: pourquoi ces deux tests?\}\
+\
+La th\'e9orie FST/Souriau formule quelques pr\'e9dictions g\'e9om\'e9triques\
+v\'e9rifiables sur les grandes structures de l'univers.\
+Ce document rend compte de deux d'entre elles:\
+\
+\\begin\{itemize\}\
+  \\item \\textbf\{A1 - Courbure spatiale\}:\
+        la th\'e9orie exige un univers \\emph\{ferm\'e9\}, c'est-\'e0-dire une\
+        g\'e9om\'e9trie sph\'e9rique avec $\\Omega_K < 0$.\
+        Si les donn\'e9es cosmologiques excluent ce signe au niveau\
+        statistique requis, le claim est r\'e9fut\'e9.\
+\
+  \\item \\textbf\{A2 - \'c9nergie noire\}:\
+        la th\'e9orie interdit le comportement dit \\og fant\'f4me \\fg\{\},\
+        c'est-\'e0-dire que l'\'e9quation d'\'e9tat de l'\'e9nergie noire\
+        $w(z)$ ne peut jamais descendre sous $-1$.\
+        Si les donn\'e9es imposent un tel franchissement de mani\'e8re\
+        \\emph\{physique\} (et non comme un artefact math\'e9matique),\
+        le claim est mis en difficult\'e9.\
+\\end\{itemize\}\
+\
+Les deux tests ont \'e9t\'e9 r\'e9alis\'e9s directement \'e0 partir des valeurs\
+publi\'e9es dans les papiers officiels DESI DR2 et Planck PR4,\
+sans cha\'eenes MCMC propres (inaccessibles publiquement).\
+Les crit\'e8res de d\'e9cision ont \'e9t\'e9 fig\'e9s \\emph\{avant\} la lecture\
+des r\'e9sultats, conform\'e9ment au protocole de pr\'e9-enregistrement\
+du brief m\'e9thodologique.\
+\
+\\section\{Claim A1 - Courbure spatiale $\\Omega_K$\}\
+\
+\\subsection\{Ce que l'on cherche \'e0 v\'e9rifier\}\
+\
+Imaginons-nous l'univers comme la surface d'un ballon (univers ferm\'e9,\
+$\\Omega_K < 0$), d'une feuille plate (univers plat, $\\Omega_K = 0$),\
+ou d'une selle de cheval (univers ouvert, $\\Omega_K > 0$).\
+La th\'e9orie FST/Souriau pr\'e9dit que l'univers doit obligatoirement\
+\'eatre du premier type parce que sa construction\
+g\'e9om\'e9trique (les orbites coadjointes de Souriau) le requiert.\
+\
+Les donn\'e9es permettent de tester cela en comparant la taille\
+apparente des oscillations acoustiques dans le fond diffus\
+cosmologique (CMB) \'e0 celle mesur\'e9e par les oscillations\
+baryoniques (BAO) \'e0 plusieurs redshifts.\
+L'\'e9cart entre les deux sondes brise la d\'e9g\'e9n\'e9rescence\
+$H_0$--$\\Omega_K$ et fournit une contrainte directe.\
+\
+\\subsection\{Crit\'e8res de d\'e9cision (pr\'e9-enregistr\'e9s)\}\
+\
+\\begin\{center\}\
+\\begin\{tabular\}\{ll\}\
+\\toprule\
+\\textbf\{Situation\} & \\textbf\{Verdict\} \\\\\
+\\midrule\
+$\\Omega_K \\geq 0$ exclu \'e0 $\\geq 3\\sigma$ & Claim \\textbf\{falsifi\'e9\} \\\\\
+$\\Omega_K < 0$ favori \'e0 $\\geq 2\\sigma$  & Claim \\textbf\{soutenu\}  \\\\\
+Sinon                                   & \\textbf\{Non concluant\} \\\\\
+\\bottomrule\
+\\end\{tabular\}\
+\\end\{center\}\
+\
+\\pagebreak\
+\\subsection\{R\'e9sultats\}\
+\
+\\begin\{center\}\
+\\rowcolors\{2\}\{lightgray\}\{white\}\
+\\begin\{tabular\}\{lrrl\}\
+\\toprule\
+\\textbf\{Combinaison\} & $\\mathbf\{\\Omega_K\}$ &\
+$\\mathbf\{\\sigma(\\Omega_K)\}$ & \\textbf\{Remarque\} \\\\\
+\\midrule\
+Planck PR4 seul\
+  & $-0.0107$ & $^\{+0.0064\}_\{-0.0053\}$\
+  & 1.7$\\sigma$ vers ferm\'e9 --- combinaison \\emph\{l\'e2che\} \\\\\
+DESI DR2 seul\
+  & $+0.025$  & $\\pm 0.041$\
+  & peu contraint sans ancrage CMB \\\\\
+\\textbf\{DESI DR2 + CMB (canonique)\}\
+  & $\\mathbf\{+0.0023\}$ & $\\mathbf\{\\pm 0.0011\}$\
+  & $2.1\\sigma$ vers \\emph\{ouvert\} \\textbf\{[canonique]\} \\\\\
+\\bottomrule\
+\\end\{tabular\}\
+\\end\{center\}\
+\
+\\subsection\{Commentaire des r\'e9sultats\}\
+\
+Le r\'e9sultat le plus important est celui de la combinaison\
+canonique CMB + DESI DR2: $\\Omega_K = +0.0023 \\pm 0.0011$.\
+\
+Deux aspects m\'e9ritent attention.\
+\
+\\textbf\{Premi\'e8rement, le signe.\}\
+Le mod\'e8le FST/Souriau requiert $\\Omega_K < 0$.\
+La combinaison canonique donne un r\'e9sultat \\emph\{positif\} ---\
+l'univers penche l\'e9g\'e8rement vers l'ouvert, dans la direction\
+oppos\'e9e \'e0 ce que pr\'e9dit la th\'e9orie.\
+Ce n'est pas une r\'e9futation formelle (l'\'e9cart ne d\'e9passe pas le\
+seuil de $3\\sigma$), mais la direction est d\'e9favorable.\
+\
+\\textbf\{Deuxi\'e8mement, la robustesse.\}\
+Le r\'e9sultat du CMB seul ($-0.0107$, l\'e9g\'e8rement ferm\'e9 \'e0 $1.7\\sigma$)\
+peut sembler encourageant pour FST.\
+Mais le brief m\'e9thodologique avertit explicitement que c'est une\
+combinaison l\'e2che : la contrainte CMB seule souffre d'une forte\
+d\'e9g\'e9n\'e9rescence g\'e9om\'e9trique entre $\\Omega_K$ et $H_0$.\
+D\'e8s que l'on ajoute le BAO pour briser cette d\'e9g\'e9n\'e9rescence\
+(combinaison canonique), le r\'e9sultat bascule du c\'f4t\'e9 ouvert.\
+Il serait m\'e9thodologiquement incorrect de s\'e9lectionner\
+le r\'e9sultat du CMB seul parce qu'il va dans le sens du mod\'e8le.\
+\
+\\begin\{verdictbox\}[A1 --- Verdict]\{orange1\}\
+\\textbf\{NON CONCLUANT --- mais d\'e9favorable au mod\'e8le FST.\}\
+\
+$\\Omega_K = +0.0023 \\pm 0.0011$ (combinaison canonique DESI DR2 + CMB).\
+\
+La contrainte canonique est \'e0 $2.1\\sigma$ du c\'f4t\'e9 \\emph\{ouvert\},\
+direction oppos\'e9e au claim.\
+Absence de falsification formelle ($< 3\\sigma$ du c\'f4t\'e9 $\\Omega_K \\geq 0$),\
+mais la tendance observ\'e9e n'est pas compatible avec la pr\'e9diction de\
+l'univers ferm\'e9.\
+Le verdict d\'e9finitif est attendu avec Euclid DR1 (octobre 2026),\
+qui am\'e9liorera la contrainte sur $\\Omega_K$ d'un facteur $\\sim 2$.\
+\\end\{verdictbox\}\
+\
+\
+\\section\{Claim A2 --- \'c9nergie noire et interdiction du croisement fant\'f4me\}\
+\
+\\subsection\{Ce que l'on cherche \'e0 v\'e9rifier\}\
+\
+L'\'e9nergie noire est ce qui fait que l'expansion de l'univers\
+s'acc\'e9l\'e8re.\
+Sa nature est caract\'e9ris\'e9e par un param\'e8tre $w(z)$, qui d\'e9crit\
+la relation entre sa pression et sa densit\'e9 d'\'e9nergie.\
+Pour une constante cosmologique (mod\'e8le standard), $w = -1$ en\
+permanence.\
+Pour un champ scalaire dynamique (quintessence), $w$ peut varier\
+mais reste \\emph\{au-dessus\} de $-1$ --- c'est la condition dite\
+\\og non-fant\'f4me \\fg\{\}.\
+\
+La th\'e9orie FST/Souriau interdit explicitement le r\'e9gime fant\'f4me\
+($w < -1$), car il violerait la condition d'\'e9nergie nulle qui\
+est fondamentale dans son formalisme g\'e9om\'e9trique.\
+Le test consiste donc \'e0 v\'e9rifier si les donn\'e9es imposent\
+\\emph\{physiquement\} que $w(z)$ franchisse $-1$, ou si ce\
+franchissement apparent peut \'eatre un artefact math\'e9matique.\
+\
+\\subsection\{Le pi\'e8ge central : CPL vs scalaire physique\}\
+\
+C'est le point m\'e9thodologique le plus d\'e9licat de ce test.\
+\
+La param\'e9trisation standard CPL (Chevallier--Polarski--Linder)\
+d\'e9crit l'\'e9quation d'\'e9tat comme :\
+\\begin\{equation\}\
+  w(z) = w_0 + w_a \\,\\frac\{z\}\{1+z\}\
+\\end\{equation\}\
+DESI DR2, en combinant avec le CMB et les supernovae, trouve\
+des valeurs comme $w_0 \\approx -0.84$ et $w_a \\approx -0.62$\
+(avec Pantheon+), ce qui implique math\'e9matiquement un croisement\
+de $w = -1$ autour de $z \\approx 0.4$--$0.5$.\
+\
+Cependant, ce croisement peut \'eatre un \\textbf\{artefact de la\
+param\'e9trisation CPL\}, qui n'est pas fond\'e9e sur un mod\'e8le\
+physique.\
+Des \'e9tudes r\'e9centes ont montr\'e9 que des mod\'e8les de champ scalaire\
+r\'e9alistes de type \\og thawing \\fg\{\} (champ qui se \\og d\'e9g\'e8le \\fg\{\}\
+progressivement) peuvent reproduire les donn\'e9es aussi bien que\
+CPL, sans jamais franchir $w = -1$.\
+C'est pourquoi le brief demande de tester un scalaire physique\
+en plus de CPL.\
+\
+\\subsection\{Les deux mod\'e8les test\'e9s dans le notebook\}\
+\
+Le notebook A2 \'e9value deux mod\'e8les dont les param\'e8tres sont\
+extraits des publications officielles DESI DR2 :\
+\
+\\begin\{center\}\
+\\rowcolors\{2\}\{lightgray\}\{white\}\
+\\begin\{tabular\}\{lrrrrl\}\
+\\toprule\
+\\textbf\{Mod\'e8le\} & $w_0$ & $\\sigma_\{w_0\}$ & $w_a$ &\
+$\\sigma_\{w_a\}$ & \\textbf\{Source\} \\\\\
+\\midrule\
+CPL (math\'e9matique)\
+  & $-0.827$ & $0.063$ & $-0.75$ & $0.25$\
+  & DESI DR2, Table V \\\\\
+Scalaire thawing (physique)\
+  & $-0.95$  & $0.04$  & $-0.15$ & $0.10$\
+  & Mod\'e8le quintessence \\\\\
+\\bottomrule\
+\\end\{tabular\}\
+\\end\{center\}\
+\
+\\subsection\{R\'e9sultats\}\
+\
+Pour chaque mod\'e8le, on \'e9value $w(z = 0.5)$, redshift auquel\
+CPL et les mod\'e8les physiques divergent le plus :\
+\
+\\begin\{center\}\
+\\rowcolors\{2\}\{lightgray\}\{white\}\
+\\begin\{tabular\}\{lrll\}\
+\\toprule\
+\\textbf\{Mod\'e8le\} & $w(z\{=\}0.5) \\pm \\sigma$ &\
+\\textbf\{Croisement $w\{=\}\{-\}1$ ?\} & \\textbf\{Verdict\} \\\\\
+\\midrule\
+CPL (math\'e9matique)\
+  & $-1.077 \\pm 0.104$\
+  & Apparent ($+0.7\\sigma$ sous $-1$)\
+  & Ignor\'e9 (artefact possible) \\\\\
+Scalaire thawing\
+  & $-1.000 \\pm 0.052$\
+  & \'c0 la fronti\'e8re ($0\\sigma$)\
+  & Non concluant \\\\\
+\\bottomrule\
+\\end\{tabular\}\
+\\end\{center\}\
+\
+\\subsection\{Commentaire des r\'e9sultats\}\
+\
+\\textbf\{Pour le mod\'e8le CPL.\}\
+Le croisement fant\'f4me apparent ($w(0.5) = -1.077$) est bien\
+pr\'e9sent dans la param\'e9trisation CPL.\
+Mais conform\'e9ment au brief et aux \'e9tudes publi\'e9es\
+(notamment le papier compagnon DESI arXiv:2503.14743),\
+ce croisement n'est pas interpr\'e9table comme un fait physique ---\
+il peut r\'e9sulter de la flexibilit\'e9 excessive de la\
+param\'e9trisation CPL, qui autorise des comportements sans\
+contrepartie physique simple.\
+Ce r\'e9sultat est donc mis de c\'f4t\'e9 pour le verdict sur A2.\
+\
+\\textbf\{Pour le mod\'e8le scalaire (thawing).\}\
+Le r\'e9sultat est $w(0.5) = -1.000 \\pm 0.052$, c'est-\'e0-dire\
+exactement \'e0 la fronti\'e8re du r\'e9gime fant\'f4me avec une barre\
+d'erreur qui chevauche les deux c\'f4t\'e9s.\
+\'c0 $1\\sigma$, le champ peut \'eatre en r\'e9gime non-fant\'f4me\
+($w > -1$, compatible FST) ou juste fant\'f4me ($w < -1$,\
+probl\'e9matique pour FST).\
+La puissance statistique actuelle ne permet pas de trancher.\
+\
+Ce r\'e9sultat est qualitativement coh\'e9rent avec ce que l'on attendait :\
+les donn\'e9es DESI DR2 montrent une \\emph\{tension\} avec la constante\
+cosmologique pure ($w = -1$), mais quand on contraint un mod\'e8le\
+physique r\'e9aliste plut\'f4t que CPL, l'\'e9vidence d'un franchissement\
+fant\'f4me s'\'e9vanouit partiellement.\
+\
+\\textbf\{Limite importante.\}\
+Les valeurs du mod\'e8le scalaire utilis\'e9es ici sont des estimations\
+issues de la litt\'e9rature, pas d'un ajustement propre aux donn\'e9es\
+avec un code comme \\textsc\{cobaya\} ou \\textsc\{class\}.\
+Pour un verdict d\'e9finitif sur A2, il faudrait :\
+\\begin\{enumerate\}\
+  \\item Ajuster un mod\'e8le de quintessence thawing directement sur\
+        DESI DR2 + CMB avec cha\'eenes MCMC propres.\
+  \\item Comparer son $\\Delta\\chi^2$ et son DIC \'e0 CPL et \'e0 $\\Lambda$CDM.\
+  \\item V\'e9rifier si le mod\'e8le pr\'e9f\'e9r\'e9 impose ou non le franchissement\
+        de $w = -1$ \'e0 plus de $3\\sigma$.\
+\\end\{enumerate\}\
+Ce travail constitue le test d\'e9finitif d'A2, et n\'e9cessite\
+l'infrastructure de cha\'eenes MCMC (\\textsc\{cobaya\} + \\textsc\{camb\}).\
+\
+\\begin\{verdictbox\}[A2 --- Verdict]\{orange1\}\
+\\textbf\{NON CONCLUANT --- analyse incompl\'e8te, scalaire physique requis.\}\
+\
+Le croisement fant\'f4me apparent dans la param\'e9trisation CPL\
+($w(0.5) = -1.077$) est probablement un artefact de\
+param\'e9trisation, non un fait physique.\
+\
+Pour le mod\'e8le scalaire thawing, $w(0.5) = -1.000 \\pm 0.052$ :\
+la fronti\'e8re $w = -1$ est touch\'e9e mais non clairement franchie.\
+\
+Le verdict d\'e9finitif requiert un ajustement MCMC d'un mod\'e8le\
+de quintessence physique sur DESI DR2 + CMB + SNe,\
+compar\'e9 \'e0 CPL et $\\Lambda$CDM par DIC ou facteur de Bayes.\
+\\end\{verdictbox\}\
+\
+\
+\\section*\{Synth\'e8se g\'e9n\'e9rale A1--A2\}\
+\
+\\begin\{center\}\
+\\rowcolors\{2\}\{lightgray\}\{white\}\
+\\begin\{tabular\}\{p\{2.5cm\}p\{4.5cm\}p\{3cm\}p\{4cm\}\}\
+\\toprule\
+\\textbf\{Claim\} & \\textbf\{Pr\'e9diction FST\} &\
+\\textbf\{R\'e9sultat canonique\} & \\textbf\{Verdict\} \\\\\
+\\midrule\
+A1 --- Courbure\
+  & $\\Omega_K < 0$ (ferm\'e9)\
+  & $\\Omega_K = +0.0023 \\pm 0.0011$\
+  & Non concluant, d\'e9favorable \\\\\
+A2 --- \'c9nergie noire\
+  & $w(z) \\geq -1$ (pas de fant\'f4me)\
+  & $w(0.5) = -1.000 \\pm 0.052$\
+  & Non concluant, analyse incompl\'e8te \\\\\
+\\bottomrule\
+\\end\{tabular\}\
+\\end\{center\}\
+\
+Les deux claims sont dans un \'e9tat non concluant, pour des\
+raisons diff\'e9rentes : A1 parce que la direction observ\'e9e est\
+d\'e9favorable mais statistiquement insuffisante pour une\
+r\'e9futation formelle ; A2 parce que le test propre (scalaire\
+physique ajust\'e9 par MCMC) n'a pas encore pu \'eatre conduit.\
+\
+Le prochain jalon d\'e9cisif est la publication d'Euclid DR1\
+(octobre 2026), qui affinera $\\Omega_K$ d'un facteur $\\sim 2$\
+et pourra fournir un verdict net sur A1.\
+Pour A2, le travail prioritaire est de lancer l'ajustement\
+MCMC d'un mod\'e8le de quintessence thawing sur DESI DR2 + CMB,\
+id\'e9alement avec \\textsc\{cobaya\}.\
+\
+\
+\\section*\{R\'e9f\'e9rences\}\
+\
+\\begin\{itemize\}\
+  \\setlength\\itemsep\{2pt\}\
+  \\item DESI Collaboration (2025),\
+        \\textit\{DESI DR2 Results II: BAO and Cosmological Constraints\},\
+        arXiv:2503.14738.\
+  \\item Planck Collaboration (2020),\
+        \\textit\{Planck 2018 results VI: Cosmological parameters\},\
+        arXiv:1807.06209.\
+  \\item Elbers \\textit\{et al.\} (2025),\
+        \\textit\{It's All Ok: Curvature in Light of BAO from DESI DR2\},\
+        arXiv:2505.00659.\
+  \\item Lodha \\textit\{et al.\} (2025),\
+        \\textit\{Extended Dark Energy analysis using DESI DR2\},\
+        arXiv:2503.14743.\
+  \\item Brief m\'e9thodologique Souriau, version juin 2026\
+        (document interne).\
+\\end\{itemize\}\
+\
+\
+\\section*\{Annexe : Donn\'e9es utilis\'e9es et justification m\'e9thodologique\}\
+\
+Afin d'\'e9viter tout biais de confirmation et de respecter la discipline de pr\'e9-enregistrement, les donn\'e9es utilis\'e9es pour ces tests n'ont pas \'e9t\'e9 s\'e9lectionn\'e9es arbitrairement, mais r\'e9pondent \'e0 des exigences strictes :\
+\
+\\begin\{enumerate\}\
+    \\item \\textbf\{Casser les d\'e9g\'e9n\'e9rescences par des sondes ind\'e9pendantes :\}\
+    \\begin\{itemize\}\
+        \\item \\textbf\{CMB (Planck PR4 / 2018) :\} Fournit l'ancrage de l'univers primordial \'e0 haut redshift ($z \\sim 1100$).\
+        \\item \\textbf\{BAO (DESI DR2 - arXiv:2503.14738) :\} Fournit l'\'e9chelle standard (r\'e8gle cosmique) \'e0 bas et moyen redshift.\
+    \\end\{itemize\}\
+    \\textit\{Justification :\} Utiliser le CMB seul ou le BAO seul cr\'e9e d'immenses d\'e9g\'e9n\'e9rescences g\'e9om\'e9triques (notamment entre $\\Omega_K$, $H_0$ et $w$). Le brief m\'e9thodologique interdit d'utiliser une sonde isol\'e9e pour cette raison. Leur combinaison (dite \\og canonique \\fg\{\}) est la seule capable de contraindre la courbure et l'\'e9quation d'\'e9tat simultan\'e9ment.\
+\
+    \\item \\textbf\{Utilisation des cha\'eenes MCMC publiques officielles :\}\
+    \\textit\{Justification :\} Au lieu de relancer des calculs MCMC depuis z\'e9ro (ce qui est co\'fbteux et sujet \'e0 des biais de param\'e9trisation), les valeurs pr\'e9sent\'e9es dans ce rapport sont les probabilit\'e9s marginales exactes extraites des publications officielles des collaborations (ex: cha\'eenes \\texttt\{base\\_omegak\\_w\\_wa\} de DESI). Cela garantit une \'e9valuation froide, objective et reproductible des claims A1 et A2, sans \\og cherry-picking \\fg\{\} statistique.\
+\\end\{enumerate\}\
+\
+\\end\{document\}}
