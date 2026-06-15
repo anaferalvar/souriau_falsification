@@ -1,58 +1,24 @@
-"""
-rolling_tachyon.py
-===================
-
-Dynamique de fond du tachyon roulant de Sen (2002), brief méthodologique
-v2.1, §1 et eq. (1)-(4).
-
-Unités utilisées (pour simplifier l'intégration numérique) :
-    - H0 = 1            (le temps est mesuré en unités de 1/H0)
-    - 8 pi G / 3 = 1    (donc rho_crit,0 = H0^2 = 1)
-    - V(phi) est donc directement exprimé en unités de rho_crit,0
-
-Variable d'intégration : N = ln(a)  (nombre d'e-folds), avec a=1
-aujourd'hui donc N=0 aujourd'hui.
-
-Équations (brief, eq. 4 et texte) :
-
-    Lagrangien :  L = -V(phi) sqrt(1 - phi_dot^2)
-    Densité     :  rho_phi = V(phi) / sqrt(1 - phi_dot^2)
-    Pression    :  p_phi   = -V(phi) sqrt(1 - phi_dot^2)
-    w           :  w = phi_dot^2 - 1   in [-1, 0]
-
-    Friedmann (plat, matiere + radiation + tachyon) :
-        H(N)^2 = Omega_r * a^-4 + Omega_m * a^-3 + rho_phi(N)
-
-    Equation de mouvement (forme covariante du brief, eq. 4),
-    réécrite en variable N = ln(a), avec d/dt = H d/dN :
-
-        dphi/dN = phi_dot / H
-        dphi_dot/dN = -(1 - phi_dot^2) * [ 3*phi_dot + V'(phi)/(V(phi)*H) ]
-
-Le système (phi, phi_dot) est intégré de N_init (haut redshift, champ
-"gelé" : phi_dot_init = 0, comportement thawing typique) jusqu'à N=0
-(aujourd'hui).
-
-La normalisation V0 du potentiel est déterminée par une procédure de
-"shooting" : on cherche V0 tel que Omega_DE(aujourd'hui) = 1 - Omega_m,
-ce qui équivaut à H(N=0) = 1 (cohérence avec H0=1).
-"""
-
 import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.optimize import brentq
 
 
-# ────────────────────────────────────────────────────────────────────
-# Équation de mouvement
-# ────────────────────────────────────────────────────────────────────
-
 def tachyon_rhs(N, y, potential, Omega_m, Omega_r=0.0):
     """
-    Second membre du système d'ODE en variable N = ln(a).
+    évalue le système d'équations différentielles pour le champ tachyonique.
 
-    y = [phi, phi_dot]
-    Retourne [dphi/dN, dphi_dot/dN]
+    calcule les dérivées de phi et phi_dot par rapport au nombre d'e-folds N = ln(a) en integrant
+    l'équation de Friedmann et l'équation de mouvement (Klein-Gordon modifiée).
+
+    ARGS:
+        N (float): Nombre d'e-folds actuel (ln(a)).
+        y (list): État du système [phi, phi_dot].
+        potential (object): Instance du potentiel tachyonique.
+        Omega_m (float): Densité de matière actuelle.
+        Omega_r (float, optionnel): Densité de radiation actuelle. Par défaut à 0.0.
+
+    RETURNS:
+        list: Dérivées [dphi/dN, dphi_dot/dN].
     """
     phi, x = y
 
@@ -76,20 +42,23 @@ def tachyon_rhs(N, y, potential, Omega_m, Omega_r=0.0):
     return [dphi_dN, dx_dN]
 
 
-# ────────────────────────────────────────────────────────────────────
-# Intégration du fond
-# ────────────────────────────────────────────────────────────────────
-
-def solve_background(potential, Omega_m, phi_init, x_init=0.0,
-                      Omega_r=0.0, z_init=50.0, n_points=2000):
+def solve_background(potential, Omega_m, phi_init, x_init=0.0, Omega_r=0.0, z_init=50.0, n_points=2000):
     """
-    Intègre le système (phi, phi_dot) de z_init jusqu'à z=0 (N=0).
+    intègre l'évolution cosmique du champ tachyonique depuis un redshift initial.
 
-    x_init=0 correspond à un champ "gelé" au redshift initial — le
-    comportement "thawing" standard pour une quintessence/tachyon
-    qui ne commence à rouler qu'aux époques récentes.
+    utilise la méthode Radau pour résoudre le système de z_init jusqu'à aujourd'hui (N=0). (peut-être il y a mieux?)
 
-    Retourne l'objet solution de scipy (sol.t = N, sol.y = [phi, x]).
+    ARGS:
+        potential (object): Instance du potentiel avec un V0 fixé.
+        Omega_m (float): Densité de matière actuelle.
+        phi_init (float): Valeur initiale du champ scalaire.
+        x_init (float, optionnel): Vitesse initiale du champ (phi_dot). Par défaut à 0.0 (champ gelé).
+        Omega_r (float, optionnel): Densité de radiation. Par défaut à 0.0.
+        z_init (float, optionnel): Redshift de départ. Par défaut à 50.0.
+        n_points (int, optionnel): Résolution temporelle de la solution. Par défaut à 2000.
+
+    RETURNS:
+        OdeResult: Objet SciPy contenant les temps d'évaluation (sol.t) et l'état (sol.y).
     """
     N_init = -np.log(1.0 + z_init)
     N_eval = np.linspace(N_init, 0.0, n_points)
@@ -102,60 +71,55 @@ def solve_background(potential, Omega_m, phi_init, x_init=0.0,
     return sol
 
 
-# ────────────────────────────────────────────────────────────────────
-# Procédure de shooting sur V0
-# ────────────────────────────────────────────────────────────────────
-
-def _omega_de_today(V0, potential_template, Omega_m, phi_init,
-                     x_init=0.0, Omega_r=0.0, z_init=50.0):
+def _omega_de_today(V0, potential_template, Omega_m, phi_init, x_init=0.0, Omega_r=0.0, z_init=50.0):
     """
-    Pour une normalisation V0 donnée, intègre le fond et retourne
-    rho_tach(aujourd'hui) = V(phi0)/sqrt(1-x0^2).
-
-    Si H(0)=1 est satisfait, ce nombre doit valoir exactement
-    Omega_DE0 = 1 - Omega_m (condition de fermeture de Friedmann
-    aujourd'hui : Omega_m + Omega_DE0 = 1).
+    calcule la densité d'énergie du tachyon aujourd'hui pour un V0 donné.
+    -> fonction utilitaire pour l'algorithme de recherche de racine.
     """
     pot = potential_template.with_V0(V0)
-    sol = solve_background(pot, Omega_m, phi_init, x_init,
-                            Omega_r=Omega_r, z_init=z_init, n_points=400)
+    sol = solve_background(pot, Omega_m, phi_init, x_init, Omega_r=Omega_r, z_init=z_init, n_points=400)
     phi0, x0 = sol.y[:, -1]
     return pot.V(phi0) / np.sqrt(1.0 - x0**2)
 
 
-def shoot_V0(potential_template, Omega_m, phi_init, x_init=0.0,
-              Omega_r=0.0, z_init=50.0, V0_bracket=(1e-4, 50.0)):
+def shoot_V0(potential_template, Omega_m, phi_init, x_init=0.0, Omega_r=0.0, z_init=50.0, V0_bracket=(1e-4, 50.0)):
     """
-    Recherche par dichotomie (brentq) la valeur de V0 telle que
-    Omega_DE(aujourd'hui) = 1 - Omega_m.
+    détermine la normalisation V0 du potentiel pour obtenir un univers plat.
 
-    Retourne V0_solution.
+    utilise une recherche de racine (algorithme de Brent) pour trouver la valeur
+    de V0 telle que Omega_DE(z=0) corresponde exactement à 1 - Omega_m.
+
+    ARGS:
+        potential_template (object): Instance du modèle de potentiel.
+        Omega_m (float): Densité de matière cible.
+        phi_init (float): Condition initiale du champ.
+        x_init (float, optionnel): Vitesse initiale du champ. Par défaut à 0.0.
+        Omega_r (float, optionnel): Densité de radiation. Par défaut à 0.0.
+        z_init (float, optionnel): Redshift de départ. Par défaut à 50.0.
+        V0_bracket (tuple, optionnel): Intervalle de recherche pour V0. Par défaut à (1e-4, 50.0).
+
+    RETURNS:
+        float: Valeur de V0 résolvant la contrainte géométrique.
     """
     target = 1.0 - Omega_m
 
     def f(V0):
-        return _omega_de_today(V0, potential_template, Omega_m,
-                                phi_init, x_init, Omega_r, z_init) - target
+        return _omega_de_today(V0, potential_template, Omega_m, phi_init, x_init, Omega_r, z_init) - target
 
     V0_sol = brentq(f, *V0_bracket, xtol=1e-12, rtol=1e-10)
     return V0_sol
 
 
-# ────────────────────────────────────────────────────────────────────
-# Interface haut niveau : fond complet + w(a)
-# ────────────────────────────────────────────────────────────────────
-
-def build_tachyon_background(potential_template, Omega_m, phi_init,
-                               x_init=0.0, Omega_r=0.0, z_init=50.0,
-                               n_points=2000):
+def build_tachyon_background(potential_template, Omega_m, phi_init, x_init=0.0, Omega_r=0.0, z_init=50.0, n_points=2000):
     """
-    Construit le fond cosmologique complet pour un potentiel donné :
-      1. trouve V0 par shooting (Omega_DE0 = 1-Omega_m) ;
-      2. intègre (phi, phi_dot) de z_init à z=0 avec ce V0 ;
-      3. calcule w(N), H(N), Omega_DE(N) sur toute la trajectoire.
+    pipeline complet: calibre le potentiel et génère l'historique cosmologique.
 
-    Retourne un dict avec les tableaux N, a, z, phi, phi_dot, w, H,
-    Omega_DE, ainsi que le potentiel final (avec V0 calibré).
+    1. Trouve le bon V0 par méthode de tir.
+    2. Intègre la trajectoire complète du champ.
+    3. Calcule les grandeurs cosmologiques dérivées (H, w, Omega_DE) sur la grille temporelle.
+
+    RETURNS:
+        dict: Dictionnaire contenant les tableaux d'évolution (N, a, z, phi, phi_dot, w, H, Omega_DE) et l'objet potentiel final calibré.
     """
     V0 = shoot_V0(potential_template, Omega_m, phi_init, x_init,
                   Omega_r, z_init)
@@ -186,20 +150,19 @@ def build_tachyon_background(potential_template, Omega_m, phi_init,
         "Omega_m": Omega_m,
     }
 
-
-# ────────────────────────────────────────────────────────────────────
-# Vérifications de cohérence ("definition of done")
-# ────────────────────────────────────────────────────────────────────
-
 def sanity_checks(bg, verbose=True):
     """
-    Vérifie les propriétés physiques attendues d'un fond tachyon :
-      - w in [-1, 0] partout
-      - H(z=0) = 1 (cohérence avec H0=1)
-      - Omega_DE(z=0) ~ 1 - Omega_m
-      - phi_dot^2 < 1 partout (sqrt(1-phi_dot^2) bien défini)
+    vérifie l'intégrité physique et numérique du fond cosmologique généré.
 
-    Retourne un dict de booléens.
+    S'assure du respect des limites théoriques du tachyon de Sen (causalité,
+    équation d'état) et des contraintes d'univers plat aux conditions limites.
+
+    Args:
+        bg (dict): Dictionnaire de l'historique cosmologique généré.
+        verbose (bool, optionnel): Affiche les résultats dans la console. Par défaut à True.
+
+    Returns:
+        dict: Résultats des tests sous forme de booléens.
     """
     w = bg["w"]
     H = bg["H"]
@@ -217,7 +180,7 @@ def sanity_checks(bg, verbose=True):
     }
 
     if verbose:
-        print("── Sanity checks ─────────────────────────────")
+        print("SANITY CHECKS")
         for k, v in checks.items():
             status = "OK" if v else "ÉCHEC"
             print(f"  {k:<28} : {status}")
