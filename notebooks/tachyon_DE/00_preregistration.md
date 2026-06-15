@@ -104,3 +104,6 @@ Pour chaque run (tachyon exponentiel, tachyon inverse-puissance):
   - commit de gel de ce document : (à renseigner après git commit)
 ---
 **Amendement 01 (2026-06-15)** : voir `preregistration_amendment-01.md` — remplace le bloc 'Règle de décision'.
+
+---
+**Amendement 01 (2026-06-15)** : voir `preregistration_amendment-01.md` — remplace le bloc 'Règle de décision'.
