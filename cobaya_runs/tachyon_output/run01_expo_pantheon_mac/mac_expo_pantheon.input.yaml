@@ -1,0 +1,86 @@
+theory:
+  src.tachyon.cobaya_interface.TachyonDE_Exponential:
+    stop_at_error: false
+    Omega_r: 9.15e-05
+    z_init: 30.0
+    n_points: 300
+    extra_args:
+      num_massive_neutrinos: 1
+      neutrino_hierarchy: degenerate
+      halofit_version: mead
+      WantCls: false
+      WantTransfer: false
+likelihood:
+  bao.desi_dr2: null
+  sn.pantheonplus: null
+params:
+  ombh2:
+    prior:
+      dist: norm
+      loc: 0.02166
+      scale: 0.00015
+    ref:
+      dist: norm
+      loc: 0.02166
+      scale: 0.0001
+    proposal: 0.0001
+    latex: \Omega_b h^2
+  omch2:
+    prior:
+      min: 0.08
+      max: 0.16
+    ref:
+      dist: norm
+      loc: 0.12
+      scale: 0.003
+    proposal: 0.002
+    latex: \Omega_c h^2
+  H0:
+    prior:
+      min: 60
+      max: 80
+    ref:
+      dist: norm
+      loc: 68.0
+      scale: 1.0
+    proposal: 0.5
+    latex: H_0
+  As: 2.1e-09
+  ns: 0.965
+  tau: 0.055
+  mnu: 0.06
+  tachyon_lambda:
+    prior:
+      min: 0.01
+      max: 3.0
+    ref:
+      dist: norm
+      loc: 0.7
+      scale: 0.2
+    proposal: 0.15
+    latex: \lambda
+  tachyon_phi_init:
+    prior:
+      min: 0.0
+      max: 1.5
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.05
+    proposal: 0.05
+    latex: \phi_i
+  Omega_m:
+    derived: 'lambda omch2, ombh2, H0: (omch2 + ombh2) / (H0/100)**2'
+    latex: \Omega_m
+sampler:
+  mcmc:
+    burn_in: 200
+    max_tries: 1000
+    learn_proposal: true
+    learn_proposal_Rminus1_max: 30
+    Rminus1_stop: 0.05
+    Rminus1_cl_stop: 0.3
+    seed: 42
+    oversample_power: 0.4
+output: mac_expo_pantheon
+packages_path: /Users/ana.feralvar/cobaya_packages
