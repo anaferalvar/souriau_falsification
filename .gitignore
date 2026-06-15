@@ -1,13 +1,28 @@
-# Données lourdes
-chains/
-*.fits
-*.fits.gz
-*.npy
-data/cmb/
-*.txt.gz
+# Environnements
+venv/
+.env
+
+# Python
 __pycache__/
 *.py[cod]
+*.pyc
 .ipynb_checkpoints/
+
+# Chaînes MCMC (volumineuses)
+cobaya_runs/tachyon_output/
+chains/
+*.txt.gz
+
+# Données lourdes
+data/cmb/
+*.fits
+*.npy
+
+# Mac
 .DS_Store
-.env
-venv/
+
+# Installeurs
+*.sh
+
+# Cobaya packages (téléchargés séparément)
+cobaya_packages/
