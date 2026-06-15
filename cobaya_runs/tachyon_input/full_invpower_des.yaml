@@ -1,0 +1,143 @@
+
+# Run complet : Tachyon invpower + DESI DR2 + Planck lite + DES-SN5YR
+
+# Pour serveur — avec CMB Planck
+
+output: cobaya_runs/tachyon_output/full_invpower_des/full_invpower_des
+
+packages_path: /Users/ana.feralvar/cobaya_packages
+
+sampler:
+
+  mcmc:
+
+    burn_in: 0
+
+    max_tries: 1000
+
+    learn_proposal: True
+
+    Rminus1_stop: 0.01
+
+    seed: 45
+
+theory:
+
+  src.tachyon.cobaya_interface.TachyonDE_InversePower:
+
+    stop_at_error: False
+
+    Omega_r: 9.15e-5
+
+    z_init: 50.0
+
+    n_points: 500
+
+    extra_args:
+
+      num_massive_neutrinos: 1
+
+      neutrino_hierarchy: degenerate
+
+likelihood:
+
+  bao.desi_dr2: null
+
+  planck_2018_highl_plik.TTTEEE_lite: null
+
+  planck_2018_lowl.TT: null
+
+  planck_2018_lowl.EE: null
+
+  sn.desdovekie: null
+
+params:
+
+  H0:
+
+    prior: {min: 60, max: 75}
+
+    ref: {dist: norm, loc: 67.5, scale: 0.5}
+
+    proposal: 0.3
+
+    latex: 'H_0'
+
+  ombh2:
+
+    prior: {min: 0.018, max: 0.026}
+
+    ref: {dist: norm, loc: 0.02237, scale: 0.00015}
+
+    proposal: 0.0002
+
+    latex: '\Omega_b h^2'
+
+  omch2:
+
+    prior: {min: 0.09, max: 0.15}
+
+    ref: {dist: norm, loc: 0.1200, scale: 0.001}
+
+    proposal: 0.001
+
+    latex: '\Omega_c h^2'
+
+  As:
+
+    prior: {min: 5e-10, max: 1e-8}
+
+    ref: {dist: norm, loc: 2.1e-9, scale: 2e-11}
+
+    proposal: 2e-11
+
+    latex: 'A_s'
+
+  ns:
+
+    prior: {min: 0.88, max: 1.06}
+
+    ref: {dist: norm, loc: 0.9649, scale: 0.005}
+
+    proposal: 0.005
+
+    latex: 'n_s'
+
+  tau:
+
+    prior: {min: 0.01, max: 0.15}
+
+    ref: {dist: norm, loc: 0.055, scale: 0.007}
+
+    proposal: 0.007
+
+    latex: '\tau'
+
+  mnu: 0.06
+
+  tachyon_n:
+
+    prior: {min: 0.1, max: 4.0}
+
+    ref: {dist: norm, loc: 1.0, scale: 0.1}
+
+    proposal: 0.1
+
+    latex: "n"
+
+  tachyon_phi_init:
+
+    prior: {min: 0.0, max: 1.5}
+
+    ref: {dist: norm, loc: 0.0, scale: 0.05}
+
+    proposal: 0.05
+
+    latex: '\phi_i'
+
+  Omega_m:
+
+    derived: "lambda omch2, ombh2, H0: (omch2 + ombh2) / (H0/100)**2"
+
+    latex: '\Omega_m'
+
