@@ -165,3 +165,120 @@ class TachyonDE_InversePower(_TachyonCAMBBase):
 
     def _get_potential(self, val, phi_init):
         return InversePowerPotential(V0=1.0, n=val)
+
+class FreeformWz(_TachyonCAMBBase):
+    """
+    Reconstruction libre (non-CPL) de w(z) en 4 bins indépendants.
+
+    Bornes FIGÉES par l'amendement-01 §3 — NE PAS MODIFIER :
+        bin 1 : z in [0.0, 0.3]   (contrainte principale : BGS)
+        bin 2 : z in [0.3, 0.6]   (contrainte principale : LRG1/LRG2 — bin PIVOT)
+        bin 3 : z in [0.6, 1.0]   (contrainte principale : LRG3+ELG1)
+        bin 4 : z in [1.0, 1.5]   (contrainte principale : ELG2, QSO)
+        w = -1 fixé pour z > 1.5  (énergie noire sous-dominante)
+
+    Chaque w_i a un prior plat indépendant sur [-3, 1] — aucun lissage
+    n'est imposé entre bins (le lissage serait lui-même une hypothèse
+    pouvant masquer une excursion réelle sous w=-1).
+
+    Cette classe ne représente PAS un modèle physique — c'est un outil
+    statistique pour calculer sigma_phi (amendement §4), indépendant
+    de tout choix de potentiel V(phi).
+    """
+
+    # Bornes figées — amendement-01 §3
+    Z_BINS = [0.0, 0.3, 0.6, 1.0, 1.5]
+    Z_MAX_EXTRAPOLATION = 5.0
+
+    params = {
+        "w_bin1": {
+            "prior": {"min": -3.0, "max": 1.0},
+            "ref": {"dist": "norm", "loc": -1.0, "scale": 0.1},
+            "proposal": 0.08,
+            "latex": r"w_1\,[0,0.3]",
+        },
+        "w_bin2": {
+            "prior": {"min": -3.0, "max": 1.0},
+            "ref": {"dist": "norm", "loc": -1.0, "scale": 0.1},
+            "proposal": 0.08,
+            "latex": r"w_2\,[0.3,0.6]",
+        },
+        "w_bin3": {
+            "prior": {"min": -3.0, "max": 1.0},
+            "ref": {"dist": "norm", "loc": -1.0, "scale": 0.1},
+            "proposal": 0.08,
+            "latex": r"w_3\,[0.6,1.0]",
+        },
+        "w_bin4": {
+            "prior": {"min": -3.0, "max": 1.0},
+            "ref": {"dist": "norm", "loc": -1.0, "scale": 0.1},
+            "proposal": 0.08,
+            "latex": r"w_4\,[1.0,1.5]",
+        },
+    }
+
+    @staticmethod
+    def _build_step_wz(w_vals, z_bins, z_max):
+        """
+        Construit le tableau (a, w) en escalier pour CAMB.
+
+        w_vals : [w1, w2, w3, w4] sur les bins z_bins.
+        Au-delà de z_bins[-1], w est fixé à -1 (amendement §3).
+        """
+        z_edges_full = list(z_bins) + [z_max]
+        w_full = list(w_vals) + [-1.0]
+
+        a_arr, w_arr = [], []
+        eps = 1e-8
+
+        # Parcours du z le plus grand au plus petit => a croissant
+        for i in reversed(range(len(w_full))):
+            z_lo, z_hi = z_edges_full[i], z_edges_full[i + 1]
+            a_hi = 1.0 / (1.0 + z_lo)
+            a_lo = 1.0 / (1.0 + z_hi)
+            a_arr += [a_lo, a_hi - eps]
+            w_arr += [w_full[i], w_full[i]]
+
+        a_arr = np.array(a_arr)
+        w_arr = np.array(w_arr)
+        idx = np.argsort(a_arr)
+        a_arr, w_arr = a_arr[idx], w_arr[idx]
+
+        # Extrapolation plate au-delà de a=1
+        a_arr = np.append(a_arr, [1.05, 2.0])
+        w_arr = np.append(w_arr, [-1.0, -1.0])
+
+        return a_arr, w_arr
+
+    def set_camb_params(self, params_values_dict, **kwargs):
+        """
+        Surcharge : injecte w(a) en escalier au lieu du fond tachyon
+        physique. Pas de résolution d'EDO ici — juste un escalier.
+        """
+        camb_params = CAMB.set_camb_params(self, params_values_dict, **kwargs)
+        if camb_params is None:
+            return None
+
+        w_vals = [
+            params_values_dict["w_bin1"],
+            params_values_dict["w_bin2"],
+            params_values_dict["w_bin3"],
+            params_values_dict["w_bin4"],
+        ]
+
+        a_arr, w_arr = self._build_step_wz(
+            w_vals, self.Z_BINS, self.Z_MAX_EXTRAPOLATION
+        )
+
+        de = camb_de.DarkEnergyFluid()
+        de.set_w_a_table(a_arr, w_arr)
+        camb_params.DarkEnergy = de
+
+        # Pas de phi_dot/w_today ici — ce n'est pas un modèle physique
+        self._w_today = float(w_vals[0])
+
+        return camb_params
+
+    def get_can_provide_params(self):
+        base = super().get_can_provide_params()
+        return [p for p in base if p != "phidot_max"]  # pas de phi_dot ici

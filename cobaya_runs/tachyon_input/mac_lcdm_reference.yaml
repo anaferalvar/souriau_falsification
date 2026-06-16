@@ -1,0 +1,64 @@
+# ══════════════════════════════════════════════════════════
+# Run 00 — ΛCDM de référence (mêmes données que run01)
+# Tachyon avec lambda fixé à 0.001 ≈ champ gelé ≈ ΛCDM
+# ══════════════════════════════════════════════════════════
+
+output: cobaya_runs/tachyon_output/run00_lcdm_reference/lcdm_ref
+packages_path: /Users/ana.feralvar/cobaya_packages
+
+sampler:
+  mcmc:
+    burn_in: 200
+    max_tries: 1000
+    learn_proposal: True
+    Rminus1_stop: 0.05
+    seed: 0
+
+theory:
+  src.tachyon.cobaya_interface.TachyonDE_Exponential:
+    stop_at_error: False
+    Omega_r: 9.15e-5
+    z_init: 30.0
+    n_points: 300
+    extra_args:
+      num_massive_neutrinos: 1
+      neutrino_hierarchy: degenerate
+      WantCls: False
+      WantTransfer: False
+
+likelihood:
+  bao.desi_dr2: null
+  sn.pantheonplus: null
+
+params:
+  ombh2:
+    prior: {dist: norm, loc: 0.02166, scale: 0.00015}
+    ref:   {dist: norm, loc: 0.02166, scale: 0.00010}
+    proposal: 0.00010
+    latex: "\\Omega_b h^2"
+
+  omch2:
+    prior: {min: 0.08, max: 0.16}
+    ref:   {dist: norm, loc: 0.120, scale: 0.003}
+    proposal: 0.002
+    latex: "\\Omega_c h^2"
+
+  H0:
+    prior: {min: 60, max: 80}
+    ref:   {dist: norm, loc: 68.0, scale: 1.0}
+    proposal: 0.5
+    latex: "H_0"
+
+  As:  2.1e-9
+  ns:  0.965
+  tau: 0.055
+  mnu: 0.06
+
+  # Tachyon gelé = ΛCDM effectif
+  # lambda très petit → V(phi) ≈ constante → w ≈ -1 partout
+  tachyon_lambda:   0.001    # FIXÉ — pas dans le MCMC
+  tachyon_phi_init: 0.0      # FIXÉ — pas dans le MCMC
+
+  Omega_m:
+    derived: "lambda omch2, ombh2, H0: (omch2 + ombh2) / (H0/100)**2"
+    latex: "\\Omega_m"

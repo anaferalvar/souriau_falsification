@@ -1,0 +1,112 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# Run Mac (réduit) : Tachyon exponentiel + DESI DR2 + Pantheon+
+# Sans Planck — prior BBN sur Omega_b h^2 à la place
+#
+# Durée estimée sur Mac Apple Silicon : 2-6h pour 5000 steps
+# Convergence Gelman-Rubin R-1 < 0.05 (moins strict que le run complet)
+# ══════════════════════════════════════════════════════════════════════════════
+
+output: cobaya_runs/tachyon_output/mac_expo_des/mac_expo_des
+packages_path: /Users/ana.feralvar/cobaya_packages
+
+# ── Sampler ──────────────────────────────────────────────────────────────────
+sampler:
+  mcmc:
+    burn_in: 200
+    max_tries: 1000
+    learn_proposal: True
+    learn_proposal_Rminus1_max: 30    # commence à apprendre très tôt
+    Rminus1_stop: 0.05                # moins strict que 0.01 (run Mac)
+    Rminus1_cl_stop: 0.3
+    seed: 43
+    # Oversampling : tachyon params plus rapides que CAMB
+    oversample_power: 0.4
+
+# ── Théorie ──────────────────────────────────────────────────────────────────
+theory:
+  src.tachyon.cobaya_interface.TachyonDE_Exponential:
+    stop_at_error: False
+    Omega_r: 9.15e-5
+    z_init: 30.0          # réduit (50 pour run complet)
+    n_points: 300         # réduit (500 pour run complet)
+    extra_args:
+      num_massive_neutrinos: 1
+      neutrino_hierarchy: degenerate
+      halofit_version: mead
+      WantCls: False                  # pas de spectre CMB → ×10 plus rapide !
+      WantTransfer: False
+
+# ── Likelihoods ──────────────────────────────────────────────────────────────
+likelihood:
+  # BAO DESI DR2 (rapide : ~0.4 ms par évaluation)
+  bao.desi_dr2: null
+
+  # Pantheon+ (rapide : ~2 ms par évaluation)
+  sn.desdovekie: null
+
+# ── Paramètres ───────────────────────────────────────────────────────────────
+params:
+
+  # Prior BBN sur Omega_b h^2 à la place de Planck
+  # (Cooke et al. 2018 : Omega_b h^2 = 0.02166 ± 0.00015)
+  ombh2:
+    prior:
+      dist: norm
+      loc: 0.02166
+      scale: 0.00015
+    ref:
+      dist: norm
+      loc: 0.02166
+      scale: 0.00010
+    proposal: 0.00010
+    latex: "\\Omega_b h^2"
+
+  # Omega_c h^2 : prior large (pas d'ancrage CMB)
+  omch2:
+    prior: {min: 0.08, max: 0.16}
+    ref:
+      dist: norm
+      loc: 0.120
+      scale: 0.003
+    proposal: 0.002
+    latex: "\\Omega_c h^2"
+
+  # H0 : prior large
+  H0:
+    prior: {min: 60, max: 80}
+    ref:
+      dist: norm
+      loc: 68.0
+      scale: 1.0
+    proposal: 0.5
+    latex: "H_0"
+
+  # Paramètres CMB fixés (pas de Planck dans ce run)
+  As:    2.1e-9
+  ns:    0.965
+  tau:   0.055
+  mnu:   0.06
+
+  # ── Paramètres du tachyon ──
+  tachyon_lambda:
+    prior: {min: 0.01, max: 3.0}
+    ref:
+      dist: norm
+      loc: 0.7
+      scale: 0.2
+    proposal: 0.15
+    latex: "\\lambda"
+
+  tachyon_phi_init:
+    prior: {min: 0.0, max: 1.5}
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.05
+    proposal: 0.05
+    latex: "\\phi_i"
+
+  # ── Dérivés ──
+  Omega_m:
+    derived: "lambda omch2, ombh2, H0: (omch2 + ombh2) / (H0/100)**2"
+    latex: "\\Omega_m"

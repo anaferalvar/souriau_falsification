@@ -15,3 +15,15 @@ Dernière mise à jour : 2026-06-08
 - Jeu primaire : DESI DR2 + Planck PR4
 - Résultats : [à remplir]
 - Verdict : [à remplir]
+
+## Amendement 01 — 2026-06-15
+- Règle de décision révisée : CPL hors verdict
+- Pivot : σ_φ (reconstruction libre w(z) en bins)
+- Branches ordonnées et disjointes (§5)
+- CMB = PR3 (correction)
+- Commit : [hash]
+
+## Livrables manquants (à faire avant dévoilement)
+- [ ] 02_freeform_wz_reconstruction.ipynb
+- [ ] YAML reconstruction libre (2 runs : Pantheon+, DES)
+- [ ] 03_verdict.ipynb mis à jour avec logique §5-§6

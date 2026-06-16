@@ -54,7 +54,7 @@ likelihood:
       low_l/bflike/lowE_bflike_smicaHM_alm_Stokes_npipe_lowl_EE_lowell_standard.clik
 
   # Supernovae Pantheon+
-  sn.pantheon_plus: null
+  sn.pantheonplus: null
 
 # ── Paramètres ───────────────────────────────────────────────────────────────
 params:

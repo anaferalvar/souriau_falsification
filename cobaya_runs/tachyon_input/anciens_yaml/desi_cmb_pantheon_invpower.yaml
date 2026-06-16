@@ -31,7 +31,7 @@ likelihood:
   planck_2018_highl_plik.TTTEEE_lite: null
   planck_2018_lowl.TT: null
   planck_2018_lowl.EE: null
-  sn.pantheon_plus: null
+  sn.pantheonplus: null
 
 params:
   H0:
