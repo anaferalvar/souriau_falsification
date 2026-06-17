@@ -1,0 +1,58 @@
+output: /content/drive/MyDrive/souriau_chains/full_lcdm_reference/full_lcdm_reference
+packages_path: /content/cobaya_packages
+
+sampler:
+  mcmc:
+    burn_in: 0
+    max_tries: 1000
+    learn_proposal: True
+    Rminus1_stop: 0.03
+    seed: 0
+
+theory:
+  src.tachyon.cobaya_interface.TachyonDE_Exponential:
+    stop_at_error: False
+    Omega_r: 9.15e-5
+    z_init: 50.0
+    n_points: 500
+    extra_args:
+      num_massive_neutrinos: 1
+      neutrino_hierarchy: degenerate
+
+likelihood:
+  bao.desi_dr2: null
+  planck_2018_highl_plik.TTTEEE_lite: null
+  planck_2018_lowl.TT: null
+  planck_2018_lowl.EE: null
+  sn.pantheonplus: null
+
+params:
+  H0:
+    prior: {min: 60, max: 75}
+    ref: {dist: norm, loc: 67.5, scale: 0.5}
+    proposal: 0.3
+  ombh2:
+    prior: {min: 0.018, max: 0.026}
+    ref: {dist: norm, loc: 0.02237, scale: 0.00015}
+    proposal: 0.0002
+  omch2:
+    prior: {min: 0.09, max: 0.15}
+    ref: {dist: norm, loc: 0.1200, scale: 0.001}
+    proposal: 0.001
+  As:
+    prior: {min: 5e-10, max: 1e-8}
+    ref: {dist: norm, loc: 2.1e-9, scale: 2e-11}
+    proposal: 2e-11
+  ns:
+    prior: {min: 0.88, max: 1.06}
+    ref: {dist: norm, loc: 0.9649, scale: 0.005}
+    proposal: 0.005
+  tau:
+    prior: {min: 0.01, max: 0.15}
+    ref: {dist: norm, loc: 0.055, scale: 0.007}
+    proposal: 0.007
+  mnu: 0.06
+  tachyon_lambda: 0.001
+  tachyon_phi_init: 0.0
+  Omega_m:
+    derived: "lambda omch2, ombh2, H0: (omch2 + ombh2) / (H0/100)**2"
