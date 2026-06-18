@@ -1,4 +1,3 @@
-
 # Run complet : Tachyon expo + DESI DR2 + Planck lite + Pantheon+
 
 # Pour serveur — avec CMB Planck
@@ -140,4 +139,3 @@ params:
     derived: "lambda omch2, ombh2, H0: (omch2 + ombh2) / (H0/100)**2"
 
     latex: '\Omega_m'
-
