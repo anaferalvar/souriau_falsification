@@ -1,0 +1,48 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2639
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 # notebooks/neutrino_meff/neutrino_meff.yaml\
+# Run exploratoire SEPARE pour l'anomalie neutrino\
+# Ne pas utiliser pour le verdict principal du Tachyon\
+\
+params:\
+  # ... (H0, ombh2, omch2, As, ns, tau, etc.) ...\
+\
+  # Le param\'e8tre effectif, libre d'explorer le n\'e9gatif\
+  mnu_eff:\
+    prior:\
+      min: -0.5\
+      max: 0.5\
+    ref:\
+      dist: norm\
+      loc: 0.0\
+      scale: 0.05\
+    proposal: 0.02\
+    latex: \\Sigma m_\\nu^\{\\rm eff\}\
+\
+  # L'astuce : On dit \'e0 CAMB de fixer sa masse physique interne \'e0 0\
+  # ou \'e0 une valeur minimale tr\'e8s basse (0.01) pour \'e9viter les crashs,\
+  # et on modifie la densit\'e9 d'\'e9nergie noire (ou un autre param\'e8tre \
+  # de fond) pour simuler l'effet de mnu_eff. \
+  # C'est une technique avanc\'e9e (voir papier Elbers).\
+  mnu: 0.02 # Fix\'e9 pour CAMB interne\
+\
+  # Param\'e8tres Tachyon (si on veut voir la corr\'e9lation)\
+  tachyon_lambda:\
+    prior:\
+      min: 0.0\
+      max: 10.0\
+    ref: 1.0\
+    proposal: 0.1\
+    latex: \\lambda\
+  tachyon_phi_init:\
+    prior:\
+      min: 0.0\
+      max: 10.0\
+    ref: 0.1\
+    proposal: 0.05\
+    latex: \\phi_\{init\}}
