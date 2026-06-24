@@ -1,0 +1,5 @@
+Potentiel,SNe,σ_φ,ΔDIC,flag_P,Verdict cellule
+exponentiel,Pantheon+,0.013913051532569057,0.35,False,SOUTENUE
+exponentiel,DES-SN5YR,0.0001022608653501089,0.62,False,SOUTENUE
+inverse,Pantheon+,0.013913051532569057,1.66,False,SOUTENUE
+inverse,DES-SN5YR,0.0001022608653501089,0.13,False,SOUTENUE
