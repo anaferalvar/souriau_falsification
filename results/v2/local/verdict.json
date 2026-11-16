@@ -1,0 +1,188 @@
+{
+  "profile": "local",
+  "sigma_phi": {
+    "Pantheon+": {
+      "D": 4.1716909761874374,
+      "p_value": 0.12529373531323434,
+      "sigma_phi": 1.1489236355758976,
+      "p_D_null_is_zero": 0.0779,
+      "w_mean": {
+        "w_bin1": -0.984,
+        "w_bin2": -0.6913,
+        "w_bin3": -1.5312,
+        "w_bin4": -1.4146
+      },
+      "w_std": {
+        "w_bin1": 0.0545,
+        "w_bin2": 0.144,
+        "w_bin3": 0.2632,
+        "w_bin4": 0.6943
+      },
+      "P_pivot_below_-1": 0.019482884195193007,
+      "corr": [
+        [
+          1.0,
+          -0.337,
+          0.392,
+          0.361
+        ],
+        [
+          -0.337,
+          1.0,
+          -0.418,
+          0.257
+        ],
+        [
+          0.392,
+          -0.418,
+          1.0,
+          0.141
+        ],
+        [
+          0.361,
+          0.257,
+          0.141,
+          1.0
+        ]
+      ]
+    },
+    "DES-SN5YR": {
+      "D": 1.4378881566565955,
+      "p_value": 0.4434778261086946,
+      "sigma_phi": 0.14215743498853786,
+      "p_D_null_is_zero": 0.06985,
+      "w_mean": {
+        "w_bin1": -0.8786,
+        "w_bin2": -0.9995,
+        "w_bin3": -1.1527,
+        "w_bin4": -1.6633
+      },
+      "w_std": {
+        "w_bin1": 0.0551,
+        "w_bin2": 0.1411,
+        "w_bin3": 0.2339,
+        "w_bin4": 0.6266
+      },
+      "P_pivot_below_-1": 0.48661380230823587,
+      "corr": [
+        [
+          1.0,
+          -0.43,
+          0.36,
+          0.269
+        ],
+        [
+          -0.43,
+          1.0,
+          -0.411,
+          0.293
+        ],
+        [
+          0.36,
+          -0.411,
+          1.0,
+          0.087
+        ],
+        [
+          0.269,
+          0.293,
+          0.087,
+          1.0
+        ]
+      ]
+    }
+  },
+  "cells": {
+    "exponentiel × Pantheon+": {
+      "sigma_phi": 1.1489236355758976,
+      "dDIC": -2.944847454183673,
+      "dchi2_min": -4.878999999999905,
+      "phidot2_max_bestfit": 0.10249271,
+      "phidot2_max_q95": 0.175823253,
+      "flag_P": false,
+      "verdict": "SOUTENUE",
+      "motif": "pas de franchissement requis, ajustement ≥ ΛCDM",
+      "tachyon_lambda": [
+        1.106447448099768,
+        0.3628634297002263
+      ],
+      "w_today": [
+        -0.9080985033970913,
+        0.0480038582913227
+      ]
+    },
+    "exponentiel × DES-SN5YR": {
+      "sigma_phi": 0.14215743498853786,
+      "dDIC": -10.158033453115195,
+      "dchi2_min": -12.457200000000057,
+      "phidot2_max_bestfit": 0.16445699,
+      "phidot2_max_q95": 0.23154640349999997,
+      "flag_P": false,
+      "verdict": "SOUTENUE",
+      "motif": "pas de franchissement requis, ajustement ≥ ΛCDM",
+      "tachyon_lambda": [
+        1.5072509685271167,
+        0.2708142069476626
+      ],
+      "w_today": [
+        -0.8464684805246854,
+        0.04749310489124807
+      ]
+    },
+    "inverse-puissance × Pantheon+": {
+      "sigma_phi": 1.1489236355758976,
+      "dDIC": -2.9975090735749745,
+      "dchi2_min": -4.907500000000027,
+      "phidot2_max_bestfit": 0.098400403,
+      "phidot2_max_q95": 0.16126035349999998,
+      "flag_P": false,
+      "verdict": "SOUTENUE",
+      "motif": "pas de franchissement requis, ajustement ≥ ΛCDM",
+      "tachyon_n": [
+        1.5309208550218343,
+        0.7547513976148276
+      ],
+      "w_today": [
+        -0.9113566826879289,
+        0.04489001760235328
+      ]
+    },
+    "inverse-puissance × DES-SN5YR": {
+      "sigma_phi": 0.14215743498853786,
+      "dDIC": -10.238184640474401,
+      "dchi2_min": -12.324699999999893,
+      "phidot2_max_bestfit": 0.15574834,
+      "phidot2_max_q95": 0.2153985059999998,
+      "flag_P": false,
+      "verdict": "SOUTENUE",
+      "motif": "pas de franchissement requis, ajustement ≥ ΛCDM",
+      "tachyon_n": [
+        2.1994096069682882,
+        0.8095701802017625
+      ],
+      "w_today": [
+        -0.8528040862722079,
+        0.0423835340693965
+      ]
+    }
+  },
+  "gp_crosscheck": "non réalisé",
+  "lcdm": {
+    "Pantheon+": {
+      "DIC": 1420.4065452245418,
+      "chi2_mean": 1418.2917226122709,
+      "chi2_min": 1416.1769,
+      "p_D": 2.1148226122709275
+    },
+    "DES-SN5YR": {
+      "DIC": 1662.8675783572362,
+      "chi2_mean": 1660.944689178618,
+      "chi2_min": 1659.0218,
+      "p_D": 1.9228891786181066
+    }
+  },
+  "verdict_global": {
+    "verdict": "SOUTENUE",
+    "motif": "unanimité des 4 cellules"
+  }
+}

@@ -1,284 +1,216 @@
 """
-cobaya_interface.py (v3 — finale)
-===================================
+cobaya_interface.py (v4 — correctif d'injection)
+=================================================
 
-Approche correcte pour cobaya + CAMB + w(a) tabulé :
+POURQUOI CETTE VERSION
+----------------------
+Les versions v1-v3 surchargeaient une méthode ``set_camb_params`` qui
+n'existe pas dans le wrapper CAMB de cobaya (vérifié sur cobaya 3.6.2) :
+la surcharge n'était jamais appelée, w(a) n'était jamais injecté, et
+toutes les chaînes « tachyon » et « reconstruction libre » tournaient en
+réalité en ΛCDM (paramètres DE = prior pur, chi2 indépendant de lambda).
 
-La classe TachyonDE hérite de cobaya.theories.camb.CAMBTheory
-(wrapper CAMB de cobaya). On surcharge `set_camb_params` pour
-injecter DarkEnergyFluid.set_w_a_table AVANT que CAMB calcule.
+COMMENT C'EST CORRIGÉ
+---------------------
+Dans cobaya, le fond cosmologique et les fonctions de transfert sont
+calculés par un *helper theory*, ``CambTransfers``, qui appelle
+``CAMB.set(params, state)`` puis CAMB. Les paramètres de fond y sont
+routés automatiquement. On :
 
-C'est la méthode documentée pour les modèles DE personnalisés
-dans cobaya (cf. DESI Dark Secrets arXiv:2502.08876).
+  1. sous-classe ``CambTransfers`` pour qu'il *déclare supporter* les
+     paramètres DE (tachyon_lambda, w_bin1, ...) : cobaya les lui route ;
+  2. dans son ``calculate``, on retire ces paramètres, on laisse cobaya
+     construire le ``CAMBparams`` standard, puis on remplace
+     ``CAMBparams.DarkEnergy`` par la table w(a) du modèle ;
+  3. on sous-classe ``CAMB`` uniquement pour brancher ce helper.
 
-La logique :
-  1. cobaya appelle notre calculate(params)
-  2. On calcule w(a) depuis rolling_tachyon.py
-  3. On appelle super().set_camb_params(...) pour obtenir
-     l'objet CAMBparams standard
-  4. On remplace DarkEnergy par DarkEnergyFluid.set_w_a_table(a, w)
-  5. CAMB tourne avec ce fond modifié → CMB, BAO, SNe calculés
+Test de non-régression : ``tests/test_injection.py`` vérifie que le chi2
+BAO+SNe change quand lambda (ou un bin w_i) change.
+
+MODÈLES (option ``de_model`` dans le YAML, ou classes-alias ci-dessous)
+---------------------------------------------------------------------
+  exponential    : V = V0 exp(-lambda phi)   params: tachyon_lambda, tachyon_phi_init
+  inverse_power  : V = V0 phi^-n            params: tachyon_n,      tachyon_phi_init
+  freeform       : w(z) en 4 bins           params: w_bin1..w_bin4
+
+Choix de l'objet DE dans CAMB :
+  - tachyon  : DarkEnergyFluid (cs2 = 1), w ∈ [-1, 0) par construction ;
+  - freeform : DarkEnergyPPF, qui autorise le franchissement de w = -1.
+    (Avec DarkEnergyFluid, CAMB rejette les w(a) qui traversent -1 : avec
+    stop_at_error: False ces points auraient eu une vraisemblance nulle,
+    ce qui aurait *biaisé le test contre le fantôme*.)
+  - Les marches du freeform sont adoucies par une tanh de largeur
+    ``step_width`` en z (0.02 par défaut) et échantillonnées finement :
+    CAMB interpole par spline cubique, une marche brute provoque des
+    oscillations parasites (dépassements sous -1 inventés).
 """
 
 import numpy as np
-import camb
 from camb import dark_energy as camb_de
-
-# Import du wrapper CAMB de cobaya
 from cobaya.theories.camb import CAMB
+from cobaya.theories.camb.camb import CambTransfers
 
 from src.tachyon.potentials import ExponentialPotential, InversePowerPotential
 from src.tachyon.rolling_tachyon import build_tachyon_background
 
+Z_BINS = (0.0, 0.3, 0.6, 1.0, 1.5)     # figé — amendement-01 §3
 
-class _TachyonCAMBBase(CAMB):
-    """
-    Base : hérite du wrapper CAMB de cobaya et surcharge
-    set_camb_params pour injecter w(a) tachyon.
-    """
+DE_PARAMS = {
+    "exponential":   ("tachyon_lambda", "tachyon_phi_init"),
+    "inverse_power": ("tachyon_n", "tachyon_phi_init"),
+    "freeform":      ("w_bin1", "w_bin2", "w_bin3", "w_bin4"),
+    "lcdm":          (),
+}
+DE_DERIVED = ("w_today", "phidot2_max")
 
-    # Paramètres de configuration (surchargeables dans YAML)
-    Omega_r: float = 9.15e-5
-    z_init:  float = 50.0
-    n_points: int  = 500
 
-    # Nom du paramètre libre tachyon (défini dans les sous-classes)
-    _free_param_name: str = ""
+# ─────────────────────────────────────────────────────────────────────
+# Tables w(a)
+# ─────────────────────────────────────────────────────────────────────
 
-    def _get_potential(self, free_param_value, phi_init):
-        raise NotImplementedError
+def freeform_w_table(w_bins, z_bins=Z_BINS, step_width=0.02, z_max=1100.0,
+                     n_points=600):
+    """w(a) en escalier adouci. w = -1 au-delà de z_bins[-1]."""
+    z = np.concatenate([np.linspace(0.0, 2.5, n_points),
+                        np.geomspace(2.6, z_max, 60)])
+    w_levels = list(w_bins) + [-1.0]
+    w = np.full_like(z, w_levels[0])
+    for k, edge in enumerate(z_bins[1:]):          # transitions aux bornes
+        jump = w_levels[k + 1] - w_levels[k]
+        w = w + jump * 0.5 * (1.0 + np.tanh((z - edge) / step_width))
+    a = 1.0 / (1.0 + z)
+    return a[::-1], w[::-1]              # CAMB exige a croissant, finissant à a = 1
 
-    def set_camb_params(self, params_values_dict, **kwargs):
-        """
-        Surcharge de la méthode cobaya qui prépare les paramètres CAMB.
-        On :
-          1. Appelle la version parente (ΛCDM standard)
-          2. Calcule w(a) depuis le tachyon
-          3. Remplace DarkEnergy dans l'objet CAMBparams
-        """
-        # ── 1. Params CAMB standard (Planck, BBN, etc.) ───────────────
-        camb_params = super().set_camb_params(params_values_dict, **kwargs)
-        if camb_params is None:
-            return None
 
-        # ── 2. Récupérer H0 et Omega_m depuis les params ─────────────
-        H0    = params_values_dict.get("H0", 67.5)
-        omch2 = params_values_dict.get("omch2", 0.120)
-        ombh2 = params_values_dict.get("ombh2", 0.0224)
-        h = H0 / 100.0
-        Omega_m = (omch2 + ombh2) / h**2
+def tachyon_w_table(potential, Omega_m, phi_init, Omega_r, z_init, n_points):
+    """Résout le fond tachyon et renvoie (a, w, w_today, phidot2_max)."""
+    bg = build_tachyon_background(potential, Omega_m, phi_init=phi_init,
+                                  x_init=0.0, Omega_r=Omega_r,
+                                  z_init=z_init, n_points=n_points)
+    a, w = bg["a"], bg["w"]
+    if not np.all(np.isfinite(w)) or np.any(w < -1 - 1e-6) \
+            or np.any(np.abs(bg["phi_dot"]) >= 1.0):
+        return None
+    # au-delà de z_init : champ gelé, w = -1
+    a_early = np.geomspace(1e-4, a[0] * 0.999, 40)
+    a = np.concatenate([a_early, a])     # CAMB exige une table finissant à a = 1
+    w = np.concatenate([np.full(40, -1.0), w])
+    return a, w, float(w[-1]), float(np.max(bg["phi_dot"] ** 2))
 
-        phi_init       = params_values_dict.get("tachyon_phi_init", 0.0)
-        free_param_val = params_values_dict.get(self._free_param_name, 1.0)
 
-        # ── 3. Fond tachyon ───────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────
+# Helper theory : c'est ici que w(a) est réellement injecté
+# ─────────────────────────────────────────────────────────────────────
+
+class DETransfers(CambTransfers):
+
+    def get_can_support_params(self):
+        return set(super().get_can_support_params()) | set(
+            DE_PARAMS[self.cobaya_camb.de_model])
+
+    def get_can_provide_params(self):
+        return list(DE_DERIVED)
+
+    def _dark_energy(self, de_vals, camb_params):
+        """Construit l'objet DarkEnergy CAMB. None => vraisemblance nulle."""
+        model = self.cobaya_camb.de_model
+        h = camb_params.H0 / 100.0
+        Omega_m = (camb_params.omch2 + camb_params.ombh2 + camb_params.omnuh2) / h**2
+
+        if model == "lcdm":
+            return None, -1.0, 0.0
+
+        if model == "freeform":
+            w_bins = [de_vals[p] for p in DE_PARAMS["freeform"]]
+            a, w = freeform_w_table(w_bins, step_width=self.cobaya_camb.step_width)
+            de = camb_de.DarkEnergyPPF()
+            de.set_w_a_table(a, w)
+            return de, float(w_bins[0]), float("nan")
+
+        phi_init = de_vals["tachyon_phi_init"]
+        if model == "exponential":
+            pot = ExponentialPotential(V0=1.0, lam=de_vals["tachyon_lambda"])
+        else:
+            pot = InversePowerPotential(V0=1.0, n=de_vals["tachyon_n"])
+        c = self.cobaya_camb
+        out = tachyon_w_table(pot, Omega_m, phi_init, c.Omega_r, c.z_init, c.n_points)
+        if out is None:
+            return False, None, None
+        a, w, w_today, phidot2_max = out
+        de = camb_de.DarkEnergyFluid(cs2=1.0)
+        de.set_w_a_table(a, w)
+        return de, w_today, phidot2_max
+
+    def calculate(self, state, want_derived=True, **params_values_dict):
+        names = DE_PARAMS[self.cobaya_camb.de_model]
+        de_vals = {p: params_values_dict.pop(p) for p in names}
+
+        camb_params = self.cobaya_camb.set(params_values_dict, state)
+        if not camb_params:
+            return False
         try:
-            potential = self._get_potential(free_param_val, phi_init)
-            bg = build_tachyon_background(
-                potential, Omega_m,
-                phi_init=phi_init, x_init=0.0,
-                Omega_r=self.Omega_r,
-                z_init=self.z_init, n_points=self.n_points
-            )
-        except Exception as e:
-            self.log.debug(f"Fond tachyon échoué : {e}")
-            return None
+            de, w_today, phidot2_max = self._dark_energy(de_vals, camb_params)
+        except Exception as e:                       # échec du tir, EDO...
+            if self.stop_at_error:
+                raise
+            self.log.debug("Fond DE échoué : %r", e)
+            return False
+        if de is False:
+            return False
+        if de is not None:
+            camb_params.DarkEnergy = de
+        state["derived"] = {"w_today": w_today, "phidot2_max": phidot2_max}
 
-        # Vérification physique
-        if np.any(bg["w"] < -1.0 - 1e-4) or np.any(np.abs(bg["phi_dot"]) >= 1.0):
-            return None
-
-        # ── 4. Injecter w(a) dans CAMB ───────────────────────────────
-        a_arr = bg["a"].copy()
-        w_arr = bg["w"].copy()
-
-        # Étendre au-delà de a=1 pour éviter extrapolation
-        a_ext = np.concatenate([a_arr, [1.05, 1.5, 2.0]])
-        w_ext = np.concatenate([w_arr, [w_arr[-1], w_arr[-1], w_arr[-1]]])
-
-        de = camb_de.DarkEnergyFluid()
-        de.set_w_a_table(a_ext, w_ext)
-        camb_params.DarkEnergy = de
-
-        # ── 5. Stocker dérivés ────────────────────────────────────────
-        self._w_today    = float(w_arr[-1])
-        self._phidot_max = float(np.max(np.abs(bg["phi_dot"])))
-
-        return camb_params
-
-    def get_can_provide_params(self):
-        base = super().get_can_provide_params() if hasattr(super(), 'get_can_provide_params') else []
-        return list(base) + ["w_today", "phidot_max"]
-
-    def get_w_today(self):
-        return getattr(self, "_w_today", -1.0)
-
-    def get_phidot_max(self):
-        return getattr(self, "_phidot_max", 0.0)
+        try:
+            if self.non_linear_sources:
+                results = self.camb.get_transfer_functions(
+                    camb_params, only_time_sources=True)
+            else:
+                results = (self.camb.get_transfer_functions(camb_params)
+                           if self.needs_perts else self.camb.get_background(camb_params))
+            state["results"] = (camb_params, results)
+        except self.camb.baseconfig.CAMBError as e:
+            if self.stop_at_error:
+                raise
+            self.log.debug("Calcul CAMB échoué : %s", e)
+            return False
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+class DarkEnergyCAMB(CAMB):
+    """CAMB avec énergie noire tabulée. Option YAML : de_model."""
 
-class TachyonDE_Exponential(_TachyonCAMBBase):
-    """V(phi) = V0 * exp(-lambda * phi)"""
+    de_model: str = "exponential"
+    Omega_r: float = 9.15e-5
+    z_init: float = 50.0
+    n_points: int = 300
+    step_width: float = 0.02
 
-    _free_param_name = "tachyon_lambda"
+    def initialize(self):
+        if self.de_model not in DE_PARAMS:
+            raise ValueError(f"de_model inconnu : {self.de_model}")
+        super().initialize()
 
-    params = {
-        "tachyon_lambda": {
-            "prior": {"min": 0.01, "max": 3.0},
-            "ref": 0.7,
-            "proposal": 0.1,
-            "latex": r"\lambda",
-        },
-        "tachyon_phi_init": {
-            "prior": {"min": 0.0, "max": 1.5},
-            "ref": 0.0,
-            "proposal": 0.05,
-            "latex": r"\phi_i",
-        }
-    }
-
-    def _get_potential(self, val, phi_init):
-        return ExponentialPotential(V0=1.0, lam=val)
+    def get_helper_theories(self):
+        self._camb_transfers = DETransfers(
+            self, "camb.transfers", {"stop_at_error": self.stop_at_error},
+            timing=self.timer)
+        self._camb_transfers.requires = self._transfer_requires
+        return {"camb.transfers": self._camb_transfers}
 
 
-class TachyonDE_InversePower(_TachyonCAMBBase):
-    """V(phi) = V0 * phi^(-n),  phi > 0"""
+# Alias : les noms de classe des anciens YAML continuent de fonctionner.
+class TachyonDE_Exponential(DarkEnergyCAMB):
+    de_model: str = "exponential"
 
-    _free_param_name = "tachyon_n"
 
-    params = {
-        "tachyon_n": {
-            "prior": {"min": 0.1, "max": 4.0},
-            "ref": 1.0,
-            "proposal": 0.1,
-            "latex": r"n",
-        },
-        "tachyon_phi_init": {
-            "prior": {"min": 0.1, "max": 2.0},
-            "ref": 1.0,
-            "proposal": 0.05,
-            "latex": r"\phi_i",
-        }
-    }
+class TachyonDE_InversePower(DarkEnergyCAMB):
+    de_model: str = "inverse_power"
 
-    def _get_potential(self, val, phi_init):
-        return InversePowerPotential(V0=1.0, n=val)
 
-class FreeformWz(_TachyonCAMBBase):
-    """
-    Reconstruction libre (non-CPL) de w(z) en 4 bins indépendants.
+class FreeformWz(DarkEnergyCAMB):
+    de_model: str = "freeform"
 
-    Bornes FIGÉES par l'amendement-01 §3 — NE PAS MODIFIER :
-        bin 1 : z in [0.0, 0.3]   (contrainte principale : BGS)
-        bin 2 : z in [0.3, 0.6]   (contrainte principale : LRG1/LRG2 — bin PIVOT)
-        bin 3 : z in [0.6, 1.0]   (contrainte principale : LRG3+ELG1)
-        bin 4 : z in [1.0, 1.5]   (contrainte principale : ELG2, QSO)
-        w = -1 fixé pour z > 1.5  (énergie noire sous-dominante)
 
-    Chaque w_i a un prior plat indépendant sur [-3, 1] — aucun lissage
-    n'est imposé entre bins (le lissage serait lui-même une hypothèse
-    pouvant masquer une excursion réelle sous w=-1).
-
-    Cette classe ne représente PAS un modèle physique — c'est un outil
-    statistique pour calculer sigma_phi (amendement §4), indépendant
-    de tout choix de potentiel V(phi).
-    """
-
-    # Bornes figées — amendement-01 §3
-    Z_BINS = [0.0, 0.3, 0.6, 1.0, 1.5]
-    Z_MAX_EXTRAPOLATION = 5.0
-
-    params = {
-        "w_bin1": {
-            "prior": {"min": -3.0, "max": 1.0},
-            "ref": {"dist": "norm", "loc": -1.0, "scale": 0.1},
-            "proposal": 0.08,
-            "latex": r"w_1\,[0,0.3]",
-        },
-        "w_bin2": {
-            "prior": {"min": -3.0, "max": 1.0},
-            "ref": {"dist": "norm", "loc": -1.0, "scale": 0.1},
-            "proposal": 0.08,
-            "latex": r"w_2\,[0.3,0.6]",
-        },
-        "w_bin3": {
-            "prior": {"min": -3.0, "max": 1.0},
-            "ref": {"dist": "norm", "loc": -1.0, "scale": 0.1},
-            "proposal": 0.08,
-            "latex": r"w_3\,[0.6,1.0]",
-        },
-        "w_bin4": {
-            "prior": {"min": -3.0, "max": 1.0},
-            "ref": {"dist": "norm", "loc": -1.0, "scale": 0.1},
-            "proposal": 0.08,
-            "latex": r"w_4\,[1.0,1.5]",
-        },
-    }
-
-    @staticmethod
-    def _build_step_wz(w_vals, z_bins, z_max):
-        """
-        Construit le tableau (a, w) en escalier pour CAMB.
-
-        w_vals : [w1, w2, w3, w4] sur les bins z_bins.
-        Au-delà de z_bins[-1], w est fixé à -1 (amendement §3).
-        """
-        z_edges_full = list(z_bins) + [z_max]
-        w_full = list(w_vals) + [-1.0]
-
-        a_arr, w_arr = [], []
-        eps = 1e-8
-
-        # Parcours du z le plus grand au plus petit => a croissant
-        for i in reversed(range(len(w_full))):
-            z_lo, z_hi = z_edges_full[i], z_edges_full[i + 1]
-            a_hi = 1.0 / (1.0 + z_lo)
-            a_lo = 1.0 / (1.0 + z_hi)
-            a_arr += [a_lo, a_hi - eps]
-            w_arr += [w_full[i], w_full[i]]
-
-        a_arr = np.array(a_arr)
-        w_arr = np.array(w_arr)
-        idx = np.argsort(a_arr)
-        a_arr, w_arr = a_arr[idx], w_arr[idx]
-
-        # Extrapolation plate au-delà de a=1
-        a_arr = np.append(a_arr, [1.05, 2.0])
-        w_arr = np.append(w_arr, [-1.0, -1.0])
-
-        return a_arr, w_arr
-
-    def set_camb_params(self, params_values_dict, **kwargs):
-        """
-        Surcharge : injecte w(a) en escalier au lieu du fond tachyon
-        physique. Pas de résolution d'EDO ici — juste un escalier.
-        """
-        camb_params = CAMB.set_camb_params(self, params_values_dict, **kwargs)
-        if camb_params is None:
-            return None
-
-        w_vals = [
-            params_values_dict["w_bin1"],
-            params_values_dict["w_bin2"],
-            params_values_dict["w_bin3"],
-            params_values_dict["w_bin4"],
-        ]
-
-        a_arr, w_arr = self._build_step_wz(
-            w_vals, self.Z_BINS, self.Z_MAX_EXTRAPOLATION
-        )
-
-        de = camb_de.DarkEnergyFluid()
-        de.set_w_a_table(a_arr, w_arr)
-        camb_params.DarkEnergy = de
-
-        # Pas de phi_dot/w_today ici — ce n'est pas un modèle physique
-        self._w_today = float(w_vals[0])
-
-        return camb_params
-
-    def get_can_provide_params(self):
-        base = super().get_can_provide_params()
-        return [p for p in base if p != "phidot_max"]  # pas de phi_dot ici
+class LCDMReference(DarkEnergyCAMB):
+    """Même chemin de code que les autres, sans DE tabulée (w = -1)."""
+    de_model: str = "lcdm"

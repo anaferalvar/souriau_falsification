@@ -1,0 +1,77 @@
+output: cobaya_runs/v2/chains/local_invpower_pantheon/local_invpower_pantheon
+packages_path: /home/claude/cobaya_packages
+theory:
+  src.tachyon.cobaya_interface.TachyonDE_InversePower:
+    stop_at_error: false
+    extra_args:
+      num_massive_neutrinos: 1
+      neutrino_hierarchy: degenerate
+likelihood:
+  bao.desi_dr2: null
+  sn.pantheonplus: null
+params:
+  H0:
+    prior:
+      min: 60
+      max: 75
+    ref:
+      dist: norm
+      loc: 68
+      scale: 0.5
+    proposal: 0.3
+    latex: H_0
+  omch2:
+    prior:
+      min: 0.08
+      max: 0.16
+    ref:
+      dist: norm
+      loc: 0.119
+      scale: 0.001
+    proposal: 0.001
+    latex: \Omega_c h^2
+  mnu: 0.06
+  Omega_m:
+    derived: 'lambda omch2, ombh2, H0: (omch2 + ombh2 + 0.06/93.14) / (H0/100)**2'
+    latex: \Omega_m
+  w_today:
+    latex: w_0
+  phidot2_max:
+    latex: \dot\phi^2_{max}
+  ombh2:
+    prior:
+      dist: norm
+      loc: 0.02218
+      scale: 0.00055
+    ref: 0.0222
+    proposal: 0.0003
+    latex: \Omega_b h^2
+  tachyon_n:
+    prior:
+      min: 0.1
+      max: 4.0
+    ref:
+      dist: norm
+      loc: 0.5
+      scale: 0.1
+    proposal: 0.1
+    latex: n
+  tachyon_phi_init:
+    prior:
+      min: 0.1
+      max: 2.0
+    ref:
+      dist: norm
+      loc: 1.0
+      scale: 0.05
+    proposal: 0.05
+    latex: \phi_i
+sampler:
+  mcmc:
+    Rminus1_stop: 0.01
+    Rminus1_cl_stop: 0.2
+    learn_proposal: true
+    max_tries: 10000
+    seed: 43
+    drag: false
+    oversample_power: 0.4
